@@ -437,6 +437,7 @@ function buildHtmlEmail({ client, proposalId, lineItems, totals, paymentLink, fr
   const validityDays = settings.defaults?.validityDays || 7;
   const company = settings.company || {};
   const freqLabel = frequency || "monthly";
+  const repEmail = company.email || rep?.email || "";
 
   const now = new Date();
   const dateStr = now.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
@@ -641,6 +642,7 @@ function ProposalPreview({ client, data, lineItems, totals, proposalId, paymentL
   const validTillStr = validTill.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
   const signatory = company.signatory || rep.name || "Sales Team";
   const phone = company.phone || rep.phone || "";
+  const repEmail = company.email || rep.email || "";
 
   return (
     <div style={{ maxWidth: 680, margin: "0 auto", background: "#fff", borderRadius: 12, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.10)", fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}>

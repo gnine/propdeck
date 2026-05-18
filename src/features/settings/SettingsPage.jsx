@@ -144,6 +144,7 @@ function CompanyTab({ form, onChange }) {
       <Field label="Signatory Name" value={form.signatory} onChange={(v) => onChange("signatory", v)} />
       <Field label="Designation" value={form.designation} onChange={(v) => onChange("designation", v)} />
       <Field label="Contact Phone" value={form.phone} onChange={(v) => onChange("phone", v)} placeholder="e.g. 98100 55678" />
+      <Field label="Contact Email" value={form.email} onChange={(v) => onChange("email", v)} placeholder="e.g. sales@yourcompany.com" />
       <label className="span-2">
         <span className="field-label">About (shown in proposals)</span>
         <textarea

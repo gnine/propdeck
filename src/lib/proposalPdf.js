@@ -75,7 +75,7 @@ export function downloadProposalPdf({ proposal, client, settings, rep, lineItems
   const validTillStr = formatDate(validTill.toISOString().split("T")[0]);
   const signatory = company.signatory || rep?.name || "Sales Team";
   const phone = company.phone || rep?.phone || "";
-  const repEmail = rep?.email || "";
+  const repEmail = company.email || rep?.email || "";
 
   const txt = (text, x, lineY, opts = {}) => {
     doc.setFont("helvetica", opts.bold ? "bold" : "normal");
