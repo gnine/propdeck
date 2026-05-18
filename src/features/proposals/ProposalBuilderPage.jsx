@@ -608,7 +608,7 @@ function buildHtmlEmail({ client, proposalId, lineItems, totals, paymentLink, fr
   <div style="border-top:1px solid #f3f4f6;padding-top:18px;">
     <div style="font-weight:700;color:#111827;font-size:14px;">${signatory}</div>
     <div style="color:#6b7280;font-size:12px;margin-top:2px;">${company.designation || rep?.role || "Sales Rep"} · ${company.name || "Propdeck"}</div>
-    <div style="margin-top:6px;font-size:12px;color:#6b7280;">${[phone, rep?.email].filter(Boolean).join(" · ")}</div>
+    <div style="margin-top:6px;font-size:12px;color:#6b7280;">${[phone, repEmail].filter(Boolean).join(" · ")}</div>
   </div>
 </div>
 
@@ -784,7 +784,7 @@ function ProposalPreview({ client, data, lineItems, totals, proposalId, paymentL
         <div style={{ borderTop: "1px solid #f3f4f6", paddingTop: 16 }}>
           <div style={{ fontWeight: 700, color: "#111827", fontSize: 14 }}>{signatory}</div>
           <div style={{ color: "#6b7280", fontSize: 12, marginTop: 2 }}>{company.designation || rep.role || "Sales Rep"} · {company.name || "Propdeck"}</div>
-          <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>{[phone, rep.email].filter(Boolean).join(" · ")}</div>
+          <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>{[phone, repEmail].filter(Boolean).join(" · ")}</div>
         </div>
       </div>
 
