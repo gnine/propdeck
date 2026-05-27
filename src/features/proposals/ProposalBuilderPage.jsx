@@ -13,6 +13,8 @@ export function ProposalBuilderPage({ data, reload, setScreen, initialClient }) 
   const [selections, setSelections] = useState({ prod_leads: "plan_leads_starter", prod_crm: "plan_crm_pro" });
   const [discounts, setDiscounts] = useState({ prod_leads: 10 });
   const [paymentLink, setPaymentLink] = useState("");
+  const [extrasHeading, setExtrasHeading] = useState("");
+  const [extrasText, setExtrasText] = useState("");
   const [sendModalOpen, setSendModalOpen] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -49,6 +51,8 @@ export function ProposalBuilderPage({ data, reload, setScreen, initialClient }) 
       createdAt: new Date().toISOString(),
       repId: data.rep?.id || "rep_aditya",
       frequency,
+      extrasHeading: extrasHeading.trim(),
+      extrasText: extrasText.trim(),
       lineItemsSnapshot: lineItems.map((item) => ({
         productName: item.product.name,
         productColor: item.product.color,
@@ -79,6 +83,8 @@ export function ProposalBuilderPage({ data, reload, setScreen, initialClient }) 
         amount: totals.total,
         status: "Draft",
         date: new Date().toISOString().split("T")[0],
+        extrasHeading: extrasHeading.trim(),
+        extrasText: extrasText.trim(),
       },
       client,
       settings: data.settings,
@@ -154,6 +160,7 @@ export function ProposalBuilderPage({ data, reload, setScreen, initialClient }) 
       )}
 
       {step === 3 && (
+        <>
         <div className="pricing-layout">
           <div>
             {lineItems.map((item) => (
@@ -193,6 +200,32 @@ export function ProposalBuilderPage({ data, reload, setScreen, initialClient }) 
             </label>
           </div>
         </div>
+
+        <div className="card extras-card">
+          <h3 className="extras-title">Complimentary / Extras <span className="extras-optional">(optional)</span></h3>
+          <p className="extras-hint">Add any complimentary services, bonuses, or special offers. If left blank, this section won't appear in the proposal.</p>
+          <label>
+            <span className="field-label">Section Heading</span>
+            <input
+              className="input"
+              value={extrasHeading}
+              onChange={(e) => setExtrasHeading(e.target.value)}
+              placeholder={`e.g. "Special Offer", "What's Included", "Bonus for You"`}
+            />
+          </label>
+          <label style={{ marginTop: 12, display: "block" }}>
+            <span className="field-label">Content</span>
+            <textarea
+              className="textarea"
+              style={{ minHeight: 120, resize: "vertical", marginTop: 6 }}
+              value={extrasText}
+              onChange={(e) => setExtrasText(e.target.value)}
+              placeholder={"Write a paragraph or use bullet points:\n- Free onboarding session\n- 1 month priority support\n- Dedicated account manager"}
+            />
+            <span className="field-hint">Lines starting with - or • are rendered as bullets in the proposal.</span>
+          </label>
+        </div>
+        </>
       )}
 
       {step === 4 && (
@@ -206,7 +239,7 @@ export function ProposalBuilderPage({ data, reload, setScreen, initialClient }) 
               {saved ? <><Check size={14} /> Saved!</> : "Save as Draft"}
             </button>
           </div>
-          <ProposalPreview client={client} data={data} lineItems={lineItems} totals={totals} proposalId={proposalId} paymentLink={paymentLink} frequency={frequency} />
+          <ProposalPreview client={client} data={data} lineItems={lineItems} totals={totals} proposalId={proposalId} paymentLink={paymentLink} frequency={frequency} extrasHeading={extrasHeading.trim()} extrasText={extrasText.trim()} />
         </div>
       )}
 
@@ -223,6 +256,8 @@ export function ProposalBuilderPage({ data, reload, setScreen, initialClient }) 
           totals={totals}
           paymentLink={paymentLink}
           frequency={frequency}
+          extrasHeading={extrasHeading.trim()}
+          extrasText={extrasText.trim()}
           data={data}
           onSent={async () => {
             await saveProposal("Sent");
@@ -341,7 +376,7 @@ function Field({ label, value = "", onChange }) {
   );
 }
 
-function SendEmailModal({ client, proposalId, lineItems, totals, paymentLink, frequency, data, onSent, onClose }) {
+function SendEmailModal({ client, proposalId, lineItems, totals, paymentLink, frequency, extrasHeading, extrasText, data, onSent, onClose }) {
   const settings = data.settings || {};
   const rep = data.rep || {};
 
@@ -353,7 +388,7 @@ function SendEmailModal({ client, proposalId, lineItems, totals, paymentLink, fr
   const [subject, setSubject] = useState(defaultSubject);
   const [status, setStatus] = useState("idle"); // idle | copied | error
 
-  const htmlBody = buildHtmlEmail({ client, proposalId, lineItems, totals, paymentLink, frequency, settings, rep });
+  const htmlBody = buildHtmlEmail({ client, proposalId, lineItems, totals, paymentLink, frequency, extrasHeading, extrasText, settings, rep });
 
   const openInGmail = async () => {
     try {
@@ -421,6 +456,20 @@ function SendEmailModal({ client, proposalId, lineItems, totals, paymentLink, fr
   );
 }
 
+function renderExtrasHtml(extrasText) {
+  if (!extrasText) return "";
+  const lines = extrasText.split("\n").filter((l) => l.trim());
+  const isBullet = (l) => /^[-•*]/.test(l.trim());
+  if (lines.every(isBullet)) {
+    const items = lines.map((l) => `<li style="padding:3px 0;font-size:13px;color:#374151;">${l.trim().replace(/^[-•*]\s*/, "")}</li>`).join("");
+    return `<ul style="margin:8px 0 0 18px;padding:0;">${items}</ul>`;
+  }
+  return lines.map((l) => {
+    if (isBullet(l)) return `<div style="padding:3px 0;font-size:13px;color:#374151;">• ${l.trim().replace(/^[-•*]\s*/, "")}</div>`;
+    return `<p style="margin:4px 0;font-size:13px;color:#374151;line-height:1.6;">${l}</p>`;
+  }).join("");
+}
+
 function billingLabel(billing) {
   if (!billing) return "";
   if (billing === "monthly") return "per month";
@@ -429,7 +478,7 @@ function billingLabel(billing) {
   return billing;
 }
 
-function buildHtmlEmail({ client, proposalId, lineItems, totals, paymentLink, frequency, settings, rep }) {
+function buildHtmlEmail({ client, proposalId, lineItems, totals, paymentLink, frequency, extrasHeading, extrasText, settings, rep }) {
   const payment = settings.payment || {};
   const kyc = settings.defaults?.kyc || [];
   const terms = settings.defaults?.terms || [];
@@ -571,6 +620,14 @@ function buildHtmlEmail({ client, proposalId, lineItems, totals, paymentLink, fr
 
   ${paymentLink ? `<div style="margin-bottom:24px;text-align:center;"><a href="${paymentLink}" style="display:inline-block;background:#1d9e75;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:700;font-size:14px;">Pay Now</a></div>` : ""}
 
+  ${extrasText ? `
+  <div style="border:1.5px solid #1d9e75;border-radius:8px;overflow:hidden;background:#f0fdf8;margin-bottom:24px;">
+    <div style="border-left:4px solid #1d9e75;padding:16px;">
+      <div style="font-size:14px;font-weight:700;color:#0f6e56;margin-bottom:8px;">${extrasHeading || "Complimentary / Extras"}</div>
+      ${renderExtrasHtml(extrasText)}
+    </div>
+  </div>` : ""}
+
   <h3 style="margin:0 0 12px;font-size:15px;color:#111827;font-weight:700;">Bank Transfer Details</h3>
   <div style="border:1.5px solid #0f6e56;border-radius:8px;overflow:hidden;background:#f0fdf8;margin-bottom:24px;">
     <div style="border-left:4px solid #0f6e56;padding:16px;">
@@ -625,7 +682,19 @@ function buildHtmlEmail({ client, proposalId, lineItems, totals, paymentLink, fr
 </html>`;
 }
 
-function ProposalPreview({ client, data, lineItems, totals, proposalId, paymentLink, frequency }) {
+function renderExtrasJsx(extrasText) {
+  if (!extrasText) return null;
+  const lines = extrasText.split("\n").filter((l) => l.trim());
+  const isBullet = (l) => /^[-•*]/.test(l.trim());
+  return lines.map((line, i) => {
+    if (isBullet(line)) {
+      return <div key={i} style={{ fontSize: 13, color: "#374151", padding: "2px 0" }}>• {line.trim().replace(/^[-•*]\s*/, "")}</div>;
+    }
+    return <p key={i} style={{ margin: "4px 0", fontSize: 13, color: "#374151", lineHeight: 1.6 }}>{line}</p>;
+  });
+}
+
+function ProposalPreview({ client, data, lineItems, totals, proposalId, paymentLink, frequency, extrasHeading, extrasText }) {
   const company = data.settings?.company || {};
   const payment = data.settings?.payment || {};
   const kyc = data.settings?.defaults?.kyc || [];
@@ -740,6 +809,16 @@ function ProposalPreview({ client, data, lineItems, totals, proposalId, paymentL
           <span style={{ color: "#fff", fontWeight: 800, fontSize: 20 }}>{formatINR(totals.total)}</span>
         </div>
         <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 20 }}>Prices in INR. GST @ {gstRate}% applicable. Frequency: {freqLabel}.</div>
+
+        {/* Extras */}
+        {extrasText && (
+          <div style={{ border: "1.5px solid #1d9e75", borderRadius: 8, overflow: "hidden", background: "#f0fdf8", marginBottom: 20 }}>
+            <div style={{ borderLeft: "4px solid #1d9e75", padding: 16 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#0f6e56", marginBottom: 8 }}>{extrasHeading || "Complimentary / Extras"}</div>
+              {renderExtrasJsx(extrasText)}
+            </div>
+          </div>
+        )}
 
         {/* Bank Transfer */}
         <div style={{ fontWeight: 700, fontSize: 15, color: "#111827", marginBottom: 10 }}>Bank Transfer Details</div>

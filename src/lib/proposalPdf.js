@@ -296,6 +296,37 @@ export function downloadProposalPdf({ proposal, client, settings, rep, lineItems
     y += 20;
   }
 
+  // ── EXTRAS / COMPLIMENTARY ───────────────────────────────
+  const extrasText = proposal.extrasText || "";
+  const extrasHeading = proposal.extrasHeading || "Complimentary / Extras";
+  if (extrasText.trim()) {
+    y += 8;
+    txt(extrasHeading, M, y, { size: 12, bold: true });
+    y += 14;
+
+    const extrasLines = extrasText.split("\n").filter((l) => l.trim());
+    const isBullet = (l) => /^[-•*]/.test(l.trim());
+    const lineH = 15;
+    const extrasBoxH = extrasLines.length * lineH + 18;
+    need(extrasBoxH + 10);
+
+    doc.setFillColor("#f0fdf8");
+    doc.setDrawColor(GREEN2);
+    doc.setLineWidth(1);
+    doc.rect(M, y, CW, extrasBoxH, "FD");
+    doc.setFillColor(GREEN2);
+    doc.rect(M, y, 3, extrasBoxH, "F");
+
+    let eY = y + 14;
+    extrasLines.forEach((line) => {
+      const clean = line.trim();
+      const label = isBullet(clean) ? `• ${clean.replace(/^[-•*]\s*/, "")}` : clean;
+      txt(label, M + 14, eY, { size: 9, color: CD, maxWidth: CW - 24 });
+      eY += lineH;
+    });
+    y += extrasBoxH + 18;
+  }
+
   // ── BANK TRANSFER ─────────────────────────────────────────
   y += 8;
   need(110);

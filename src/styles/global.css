@@ -875,6 +875,31 @@ kbd {
   border: 1px solid #e5e7eb;
 }
 
+.extras-card {
+  margin-top: 20px;
+  padding: 20px 22px;
+}
+
+.extras-title {
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: #111827;
+}
+
+.extras-optional {
+  font-size: 12px;
+  font-weight: 400;
+  color: #9ca3af;
+  margin-left: 4px;
+}
+
+.extras-hint {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0 0 14px;
+  line-height: 1.5;
+}
+
 .builder-actions {
   display: flex;
   justify-content: space-between;

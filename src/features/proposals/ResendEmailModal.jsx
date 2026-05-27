@@ -170,6 +170,17 @@ function buildResendHtml({ proposal, client, company, payment, kyc, terms, gstRa
   </div>
   <p style="margin:0 0 24px;font-size:11px;color:#9ca3af;">Prices in INR. GST @ ${gstRate}% included.</p>
 
+  ${proposal.extrasText ? `
+  <div style="border:1.5px solid #1d9e75;border-radius:8px;overflow:hidden;background:#f0fdf8;margin-bottom:24px;">
+    <div style="border-left:4px solid #1d9e75;padding:16px;">
+      <div style="font-size:14px;font-weight:700;color:#0f6e56;margin-bottom:8px;">${proposal.extrasHeading || "Complimentary / Extras"}</div>
+      ${proposal.extrasText.split("\n").filter(l => l.trim()).map(l => /^[-•*]/.test(l.trim())
+        ? `<div style="padding:3px 0;font-size:13px;color:#374151;">• ${l.trim().replace(/^[-•*]\s*/,"")}</div>`
+        : `<p style="margin:4px 0;font-size:13px;color:#374151;line-height:1.6;">${l}</p>`
+      ).join("")}
+    </div>
+  </div>` : ""}
+
   <!-- Bank Transfer -->
   <h3 style="margin:0 0 12px;font-size:15px;color:#111827;font-weight:700;">Bank Transfer Details</h3>
   <div style="border:1.5px solid #0f6e56;border-radius:8px;overflow:hidden;background:#f0fdf8;margin-bottom:24px;">
@@ -208,7 +219,7 @@ function buildResendHtml({ proposal, client, company, payment, kyc, terms, gstRa
   <div style="border-top:1px solid #f3f4f6;padding-top:18px;">
     <div style="font-weight:700;color:#111827;font-size:14px;">${signatory}</div>
     <div style="color:#6b7280;font-size:12px;margin-top:2px;">${company.designation || rep?.role || "Sales Rep"} · ${company.name || "Propdeck"}</div>
-    <div style="font-size:12px;color:#6b7280;margin-top:4px;">${[phone, rep?.email].filter(Boolean).join(" · ")}</div>
+    <div style="font-size:12px;color:#6b7280;margin-top:4px;">${[phone, company.email || rep?.email].filter(Boolean).join(" · ")}</div>
   </div>
 </div>
 
