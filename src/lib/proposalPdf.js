@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import { formatDate } from "./format.js";
+import { generateUpiQr } from "./generateQr.js";
 
 // Helvetica (the only built-in jsPDF font) has no ₹ glyph — use Rs. instead
 const inr = (v) => `Rs.${Number(v || 0).toLocaleString("en-IN")}`;
@@ -52,7 +53,7 @@ const CM = "#374151";
 const CL = "#6b7280";
 const CMU = "#9ca3af";
 
-export function downloadProposalPdf({ proposal, client, settings, rep, lineItems, totals, frequency }) {
+export async function downloadProposalPdf({ proposal, client, settings, rep, lineItems, totals, frequency }) {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pw = doc.internal.pageSize.getWidth();
   const ph = doc.internal.pageSize.getHeight();
@@ -78,6 +79,7 @@ export function downloadProposalPdf({ proposal, client, settings, rep, lineItems
   const signatory = company.signatory || rep?.name || "Sales Team";
   const phone = company.phone || rep?.phone || "";
   const repEmail = company.email || rep?.email || "";
+  const upiQrDataUrl = await generateUpiQr(payment.upi, company.name);
 
   const txt = (text, x, lineY, opts = {}) => {
     doc.setFont("helvetica", opts.bold ? "bold" : "normal");
@@ -335,12 +337,13 @@ export function downloadProposalPdf({ proposal, client, settings, rep, lineItems
   txt("Bank Transfer Details", M, y, { size: 12, bold: true });
   y += 14;
 
+  const qrSize = upiQrDataUrl && payment.upi ? 88 : 0; // QR image size in pts
   const bankRows = [
     [["Bank", payment.bank], ["Account Holder", payment.holder || payment.bank]],
     [["Account No", payment.account], ["Account Type", payment.type]],
     [["IFSC", payment.ifsc], ["UPI ID", payment.upi]],
   ];
-  const boxH = bankRows.length * 30 + 16;
+  const boxH = Math.max(bankRows.length * 30 + 16, qrSize + 24);
   doc.setFillColor("#f0fdf8");
   doc.setDrawColor(GREEN);
   doc.setLineWidth(1);
@@ -348,14 +351,26 @@ export function downloadProposalPdf({ proposal, client, settings, rep, lineItems
   doc.setFillColor(GREEN);
   doc.rect(M, y, 3, boxH, "F");
 
+  // Bank text columns — narrow if QR is present
+  const bankTextW = qrSize > 0 ? CW - qrSize - 20 : CW;
+  const bankColW = bankTextW / 2;
   let bY = y + 18;
   bankRows.forEach(([left, right]) => {
     txt(left[0], M + 14, bY, { size: 7.5, bold: true, color: CL });
-    txt(left[1] || "—", M + 14, bY + 12, { size: 9, bold: true, color: CD, maxWidth: CW / 2 - 20 });
-    txt(right[0], M + CW / 2 + 10, bY, { size: 7.5, bold: true, color: CL });
-    txt(right[1] || "—", M + CW / 2 + 10, bY + 12, { size: 9, bold: true, color: CD, maxWidth: CW / 2 - 14 });
+    txt(left[1] || "—", M + 14, bY + 12, { size: 9, bold: true, color: CD, maxWidth: bankColW - 20 });
+    txt(right[0], M + 14 + bankColW, bY, { size: 7.5, bold: true, color: CL });
+    txt(right[1] || "—", M + 14 + bankColW, bY + 12, { size: 9, bold: true, color: CD, maxWidth: bankColW - 14 });
     bY += 30;
   });
+
+  // QR code on the right side of bank box
+  if (upiQrDataUrl && payment.upi) {
+    const qrX = M + CW - qrSize - 10;
+    const qrY = y + (boxH - qrSize - 14) / 2;
+    doc.addImage(upiQrDataUrl, "PNG", qrX, qrY, qrSize, qrSize);
+    txt("Scan to Pay (UPI)", qrX + qrSize / 2, qrY + qrSize + 10, { size: 7, color: CL, align: "center" });
+  }
+
   y += boxH + 18;
 
   // ── KYC ──────────────────────────────────────────────────

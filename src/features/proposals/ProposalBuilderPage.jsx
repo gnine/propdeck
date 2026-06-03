@@ -3,6 +3,7 @@ import { Check, Mail, X } from "lucide-react";
 import { formatINR, amountInWords } from "../../lib/format.js";
 import { buildLineItems, nextProposalId, summarizeProposal } from "../../lib/proposalMath.js";
 import { putOne } from "../../lib/db.js";
+import { generateUpiQr } from "../../lib/generateQr.js";
 import { downloadProposalPdf } from "../../lib/proposalPdf.js";
 
 const steps = ["Client Details", "Select Products", "Pricing", "Preview & Send"];
@@ -387,8 +388,13 @@ function SendEmailModal({ client, proposalId, lineItems, totals, paymentLink, fr
   const [toEmail, setToEmail] = useState(client.email || "");
   const [subject, setSubject] = useState(defaultSubject);
   const [status, setStatus] = useState("idle"); // idle | copied | error
+  const [qrDataUrl, setQrDataUrl] = useState(null);
 
-  const htmlBody = buildHtmlEmail({ client, proposalId, lineItems, totals, paymentLink, frequency, extrasHeading, extrasText, settings, rep });
+  useEffect(() => {
+    generateUpiQr(settings.payment?.upi, settings.company?.name).then(setQrDataUrl);
+  }, [settings.payment?.upi, settings.company?.name]);
+
+  const htmlBody = buildHtmlEmail({ client, proposalId, lineItems, totals, paymentLink, frequency, extrasHeading, extrasText, settings, rep, qrDataUrl });
 
   const openInGmail = async () => {
     try {
@@ -478,7 +484,7 @@ function billingLabel(billing) {
   return billing;
 }
 
-function buildHtmlEmail({ client, proposalId, lineItems, totals, paymentLink, frequency, extrasHeading, extrasText, settings, rep }) {
+function buildHtmlEmail({ client, proposalId, lineItems, totals, paymentLink, frequency, extrasHeading, extrasText, settings, rep, qrDataUrl }) {
   const payment = settings.payment || {};
   const kyc = settings.defaults?.kyc || [];
   const terms = settings.defaults?.terms || [];
@@ -634,22 +640,31 @@ function buildHtmlEmail({ client, proposalId, lineItems, totals, paymentLink, fr
   <div style="border:1.5px solid ${brandColor};border-radius:8px;overflow:hidden;background:#f0fdf8;margin-bottom:24px;">
     <div style="border-left:4px solid ${brandColor};padding:16px;">
       <table style="width:100%;border-collapse:collapse;"><tr>
-        <td style="width:50%;padding-right:16px;vertical-align:top;">
-          <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">Bank</div>
-          <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px;">${payment.bank || "—"}</div>
-          <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">Account No</div>
-          <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px;">${payment.account || "—"}</div>
-          <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">IFSC</div>
-          <div style="font-size:13px;font-weight:600;color:#111827;">${payment.ifsc || "—"}</div>
+        <td style="vertical-align:top;padding-right:16px;">
+          <table style="width:100%;border-collapse:collapse;"><tr>
+            <td style="width:50%;padding-right:12px;vertical-align:top;">
+              <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">Bank</div>
+              <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px;">${payment.bank || "—"}</div>
+              <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">Account No</div>
+              <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px;">${payment.account || "—"}</div>
+              <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">IFSC</div>
+              <div style="font-size:13px;font-weight:600;color:#111827;">${payment.ifsc || "—"}</div>
+            </td>
+            <td style="width:50%;vertical-align:top;">
+              <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">Account Holder</div>
+              <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px;">${payment.holder || payment.bank || "—"}</div>
+              <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">Account Type</div>
+              <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px;">${payment.type || "—"}</div>
+              <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">UPI ID</div>
+              <div style="font-size:13px;font-weight:600;color:#111827;">${payment.upi || "—"}</div>
+            </td>
+          </tr></table>
         </td>
-        <td style="width:50%;vertical-align:top;">
-          <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">Account Holder</div>
-          <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px;">${payment.holder || payment.bank || "—"}</div>
-          <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">Account Type</div>
-          <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px;">${payment.type || "—"}</div>
-          <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">UPI ID</div>
-          <div style="font-size:13px;font-weight:600;color:#111827;">${payment.upi || "—"}</div>
-        </td>
+        ${qrDataUrl && payment.upi ? `
+        <td style="width:160px;vertical-align:middle;text-align:center;flex-shrink:0;">
+          <img src="${qrDataUrl}" alt="UPI QR" width="150" height="150" style="display:block;border-radius:6px;margin:0 auto;" />
+          <div style="font-size:10px;color:#6b7280;font-weight:600;margin-top:5px;">Scan to Pay (UPI)</div>
+        </td>` : ""}
       </tr></table>
     </div>
   </div>
@@ -707,6 +722,11 @@ function ProposalPreview({ client, data, lineItems, totals, proposalId, paymentL
   const rep = data.rep || {};
   const brandColor = company.brandColor || "#0f6e56";
   const accentColor = company.brandColor || "#1d9e75";
+
+  const [qrDataUrl, setQrDataUrl] = useState(null);
+  useEffect(() => {
+    generateUpiQr(payment.upi, company.name).then(setQrDataUrl);
+  }, [payment.upi, company.name]);
 
   const now = new Date();
   const dateStr = now.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
@@ -827,13 +847,21 @@ function ProposalPreview({ client, data, lineItems, totals, proposalId, paymentL
         {/* Bank Transfer */}
         <div style={{ fontWeight: 700, fontSize: 15, color: "#111827", marginBottom: 10 }}>Bank Transfer Details</div>
         <div style={{ border: `1.5px solid ${brandColor}`, borderRadius: 8, overflow: "hidden", background: "#f0fdf8", marginBottom: 20 }}>
-          <div style={{ borderLeft: `4px solid ${brandColor}`, padding: 16, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 16px" }}>
-            {[["Bank", payment.bank], ["Account Holder", payment.holder || payment.bank], ["Account No", payment.account], ["Account Type", payment.type], ["IFSC", payment.ifsc], ["UPI ID", payment.upi]].map(([label, value]) => (
-              <div key={label}>
-                <div style={{ fontSize: 9, fontWeight: 700, color: "#6b7280", textTransform: "uppercase" }}>{label}</div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>{value || "—"}</div>
+          <div style={{ borderLeft: `4px solid ${brandColor}`, padding: 16, display: "flex", gap: 16, alignItems: "flex-start" }}>
+            <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 16px" }}>
+              {[["Bank", payment.bank], ["Account Holder", payment.holder || payment.bank], ["Account No", payment.account], ["Account Type", payment.type], ["IFSC", payment.ifsc], ["UPI ID", payment.upi]].map(([label, value]) => (
+                <div key={label}>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: "#6b7280", textTransform: "uppercase" }}>{label}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>{value || "—"}</div>
+                </div>
+              ))}
+            </div>
+            {qrDataUrl && payment.upi && (
+              <div style={{ flexShrink: 0, textAlign: "center" }}>
+                <img src={qrDataUrl} alt="UPI QR Code" style={{ width: 110, height: 110, display: "block", borderRadius: 6 }} />
+                <div style={{ fontSize: 9, color: "#6b7280", marginTop: 4, fontWeight: 600 }}>Scan to Pay (UPI)</div>
               </div>
-            ))}
+            )}
           </div>
         </div>
 
