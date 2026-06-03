@@ -487,6 +487,8 @@ function buildHtmlEmail({ client, proposalId, lineItems, totals, paymentLink, fr
   const company = settings.company || {};
   const freqLabel = frequency || "monthly";
   const repEmail = company.email || rep?.email || "";
+  const brandColor = company.brandColor || "#0f6e56";
+  const accentColor = company.brandColor || "#1d9e75";
 
   const now = new Date();
   const dateStr = now.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
@@ -504,18 +506,18 @@ function buildHtmlEmail({ client, proposalId, lineItems, totals, paymentLink, fr
       ? `<span style="text-decoration:line-through;color:#9ca3af;font-size:12px;margin-right:4px;">${inr(item.mrp)}</span>`
       : "";
     const features = (item.plan.features || []).map((f) =>
-      `<div style="padding:2px 0;font-size:12px;color:#374151;"><span style="color:#1d9e75;font-weight:700;margin-right:5px;">✓</span>${f}</div>`
+      `<div style="padding:2px 0;font-size:12px;color:#374151;"><span style="color:${accentColor};font-weight:700;margin-right:5px;">✓</span>${f}</div>`
     ).join("");
     return `
 <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:12px;">
-  <div style="border-left:4px solid ${item.product.color || "#1d9e75"};padding:14px 16px;background:#fafafa;">
+  <div style="border-left:4px solid ${item.product.color || accentColor};padding:14px 16px;background:#fafafa;">
     <table style="width:100%;border-collapse:collapse;"><tr>
       <td><span style="font-size:15px;font-weight:700;color:#111827;">${item.product.name}</span>
-        <span style="display:inline-block;background:#ecfdf5;color:#1d9e75;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:8px;">${item.plan.name}</span>
+        <span style="display:inline-block;background:#ecfdf5;color:${accentColor};font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:8px;">${item.plan.name}</span>
         <div style="color:#6b7280;font-size:12px;margin-top:3px;">${item.plan.description}</div>
       </td>
       <td style="text-align:right;white-space:nowrap;vertical-align:top;">
-        ${mrpHtml}<div style="font-size:16px;font-weight:800;color:#1d9e75;">${inr(item.final)}</div>
+        ${mrpHtml}<div style="font-size:16px;font-weight:800;color:${accentColor};">${inr(item.final)}</div>
         ${item.plan.billing ? `<div style="font-size:11px;color:#9ca3af;">${billingLabel(item.plan.billing)}</div>` : ""}
       </td>
     </tr></table>
@@ -534,7 +536,7 @@ function buildHtmlEmail({ client, proposalId, lineItems, totals, paymentLink, fr
       <td style="padding:10px 12px;font-size:13px;color:#6b7280;">${item.plan.name}</td>
       <td style="padding:10px 12px;font-size:13px;">${mrpCell}</td>
       <td style="padding:10px 12px;font-size:13px;text-align:center;color:#374151;">${disc > 0 ? `${disc}%` : "—"}</td>
-      <td style="padding:10px 12px;font-size:13px;font-weight:700;color:#1d9e75;text-align:right;">${inr(item.final)}</td>
+      <td style="padding:10px 12px;font-size:13px;font-weight:700;color:${accentColor};text-align:right;">${inr(item.final)}</td>
     </tr>`;
   }).join("");
 
@@ -553,7 +555,7 @@ function buildHtmlEmail({ client, proposalId, lineItems, totals, paymentLink, fr
 <div style="max-width:640px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
 
 <!-- Header -->
-<div style="background:#0f6e56;padding:26px 32px;">
+<div style="background:${brandColor};padding:26px 32px;">
   <table style="width:100%;border-collapse:collapse;"><tr>
     <td><div style="color:#fff;font-size:20px;font-weight:800;">${company.name || "Propdeck"}</div>
       <div style="color:rgba(255,255,255,0.6);font-size:11px;margin-top:3px;">${company.tagline || ""}</div></td>
@@ -608,7 +610,7 @@ function buildHtmlEmail({ client, proposalId, lineItems, totals, paymentLink, fr
     <tr><td style="padding:6px 12px;font-size:13px;color:#6b7280;">Subtotal</td><td style="padding:6px 12px;text-align:right;font-size:13px;font-weight:600;color:#374151;">${inr(totals.subtotal)}</td></tr>
     <tr><td style="padding:6px 12px;font-size:13px;color:#6b7280;">GST (${gstRate}%)</td><td style="padding:6px 12px;text-align:right;font-size:13px;font-weight:600;color:#374151;">${inr(totals.gst)}</td></tr>
   </table>
-  <div style="background:#1d9e75;border-radius:8px;padding:14px 16px;margin-bottom:6px;">
+  <div style="background:${accentColor};border-radius:8px;padding:14px 16px;margin-bottom:6px;">
     <table style="width:100%;border-collapse:collapse;"><tr>
       <td style="color:#fff;font-weight:700;font-size:14px;">TOTAL PAYABLE</td>
       <td style="text-align:right;color:#fff;font-weight:800;font-size:20px;">${inr(totals.total)}</td>
@@ -618,19 +620,19 @@ function buildHtmlEmail({ client, proposalId, lineItems, totals, paymentLink, fr
   </div>
   <p style="margin:0 0 24px;font-size:11px;color:#9ca3af;">Prices in INR. GST @ ${gstRate}% applicable. Frequency: ${freqLabel}.</p>
 
-  ${paymentLink ? `<div style="margin-bottom:24px;text-align:center;"><a href="${paymentLink}" style="display:inline-block;background:#1d9e75;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:700;font-size:14px;">Pay Now</a></div>` : ""}
+  ${paymentLink ? `<div style="margin-bottom:24px;text-align:center;"><a href="${paymentLink}" style="display:inline-block;background:${accentColor};color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:700;font-size:14px;">Pay Now</a></div>` : ""}
 
   ${extrasText ? `
-  <div style="border:1.5px solid #1d9e75;border-radius:8px;overflow:hidden;background:#f0fdf8;margin-bottom:24px;">
-    <div style="border-left:4px solid #1d9e75;padding:16px;">
-      <div style="font-size:14px;font-weight:700;color:#0f6e56;margin-bottom:8px;">${extrasHeading || "Complimentary / Extras"}</div>
+  <div style="border:1.5px solid ${accentColor};border-radius:8px;overflow:hidden;background:#f0fdf8;margin-bottom:24px;">
+    <div style="border-left:4px solid ${accentColor};padding:16px;">
+      <div style="font-size:14px;font-weight:700;color:${brandColor};margin-bottom:8px;">${extrasHeading || "Complimentary / Extras"}</div>
       ${renderExtrasHtml(extrasText)}
     </div>
   </div>` : ""}
 
   <h3 style="margin:0 0 12px;font-size:15px;color:#111827;font-weight:700;">Bank Transfer Details</h3>
-  <div style="border:1.5px solid #0f6e56;border-radius:8px;overflow:hidden;background:#f0fdf8;margin-bottom:24px;">
-    <div style="border-left:4px solid #0f6e56;padding:16px;">
+  <div style="border:1.5px solid ${brandColor};border-radius:8px;overflow:hidden;background:#f0fdf8;margin-bottom:24px;">
+    <div style="border-left:4px solid ${brandColor};padding:16px;">
       <table style="width:100%;border-collapse:collapse;"><tr>
         <td style="width:50%;padding-right:16px;vertical-align:top;">
           <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">Bank</div>
@@ -671,7 +673,7 @@ function buildHtmlEmail({ client, proposalId, lineItems, totals, paymentLink, fr
 
 <!-- Footer -->
 <div style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:16px 32px;text-align:center;">
-  <div style="color:#0f6e56;font-weight:700;font-size:13px;margin-bottom:4px;">${company.name || "Propdeck"}</div>
+  <div style="color:${brandColor};font-weight:700;font-size:13px;margin-bottom:4px;">${company.name || "Propdeck"}</div>
   ${company.address ? `<div style="color:#6b7280;font-size:11px;margin-bottom:3px;">${company.address.replace(/\n/g, ", ")}</div>` : ""}
   ${company.gst ? `<div style="color:#6b7280;font-size:11px;margin-bottom:3px;">GST No: ${company.gst}</div>` : ""}
   <div style="color:#9ca3af;font-size:10px;">© ${new Date().getFullYear()} ${company.name || "Propdeck"}. All rights reserved.</div>
@@ -703,6 +705,8 @@ function ProposalPreview({ client, data, lineItems, totals, proposalId, paymentL
   const validityDays = data.settings?.defaults?.validityDays || 7;
   const freqLabel = frequency || "monthly";
   const rep = data.rep || {};
+  const brandColor = company.brandColor || "#0f6e56";
+  const accentColor = company.brandColor || "#1d9e75";
 
   const now = new Date();
   const dateStr = now.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
@@ -717,7 +721,7 @@ function ProposalPreview({ client, data, lineItems, totals, proposalId, paymentL
     <div style={{ maxWidth: 680, margin: "0 auto", background: "#fff", borderRadius: 12, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.10)", fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}>
 
       {/* Header */}
-      <div style={{ background: "#0f6e56", padding: "24px 32px" }}>
+      <div style={{ background: brandColor, padding: "24px 32px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
             <div style={{ color: "#fff", fontSize: 20, fontWeight: 800 }}>{company.name || "Propdeck"}</div>
@@ -752,19 +756,19 @@ function ProposalPreview({ client, data, lineItems, totals, proposalId, paymentL
               <div style={{ borderLeft: `4px solid ${item.product.color || "#1d9e75"}`, padding: "12px 16px", background: "#fafafa", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div>
                   <span style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{item.product.name}</span>
-                  <span style={{ display: "inline-block", background: "#ecfdf5", color: "#1d9e75", fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 4, marginLeft: 8 }}>{item.plan.name}</span>
+                  <span style={{ display: "inline-block", background: "#ecfdf5", color: accentColor, fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 4, marginLeft: 8 }}>{item.plan.name}</span>
                   <div style={{ color: "#6b7280", fontSize: 11, marginTop: 3 }}>{item.plan.description}</div>
                 </div>
                 <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 16 }}>
                   {disc > 0 && <div style={{ textDecoration: "line-through", color: "#9ca3af", fontSize: 11 }}>{formatINR(item.mrp)}</div>}
-                  <div style={{ fontSize: 15, fontWeight: 800, color: "#1d9e75" }}>{formatINR(item.final)}</div>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: accentColor }}>{formatINR(item.final)}</div>
                   {item.plan.billing && <div style={{ fontSize: 10, color: "#9ca3af" }}>{billingLabel(item.plan.billing)}</div>}
                 </div>
               </div>
               <div style={{ padding: "8px 16px 10px", background: "#fff" }}>
                 {(item.plan.features || []).map((f) => (
                   <div key={f} style={{ fontSize: 12, color: "#374151", padding: "2px 0" }}>
-                    <span style={{ color: "#1d9e75", fontWeight: 700, marginRight: 5 }}>✓</span>{f}
+                    <span style={{ color: accentColor, fontWeight: 700, marginRight: 5 }}>✓</span>{f}
                   </div>
                 ))}
               </div>
@@ -793,7 +797,7 @@ function ProposalPreview({ client, data, lineItems, totals, proposalId, paymentL
                     {disc > 0 ? <s style={{ color: "#9ca3af" }}>{formatINR(item.mrp)}</s> : formatINR(item.mrp)}
                   </td>
                   <td style={{ padding: "9px 10px", fontSize: 12, textAlign: "center" }}>{disc > 0 ? `${disc}%` : "—"}</td>
-                  <td style={{ padding: "9px 10px", fontSize: 12, fontWeight: 700, color: "#1d9e75", textAlign: "right" }}>{formatINR(item.final)}</td>
+                  <td style={{ padding: "9px 10px", fontSize: 12, fontWeight: 700, color: accentColor, textAlign: "right" }}>{formatINR(item.final)}</td>
                 </tr>
               );
             })}
@@ -804,7 +808,7 @@ function ProposalPreview({ client, data, lineItems, totals, proposalId, paymentL
           <span>Subtotal: <strong style={{ color: "#374151" }}>{formatINR(totals.subtotal)}</strong></span>
           <span>GST ({gstRate}%): <strong style={{ color: "#374151" }}>{formatINR(totals.gst)}</strong></span>
         </div>
-        <div style={{ background: "#1d9e75", borderRadius: 8, padding: "13px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+        <div style={{ background: accentColor, borderRadius: 8, padding: "13px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
           <span style={{ color: "#fff", fontWeight: 700, fontSize: 14 }}>TOTAL PAYABLE</span>
           <span style={{ color: "#fff", fontWeight: 800, fontSize: 20 }}>{formatINR(totals.total)}</span>
         </div>
@@ -812,9 +816,9 @@ function ProposalPreview({ client, data, lineItems, totals, proposalId, paymentL
 
         {/* Extras */}
         {extrasText && (
-          <div style={{ border: "1.5px solid #1d9e75", borderRadius: 8, overflow: "hidden", background: "#f0fdf8", marginBottom: 20 }}>
-            <div style={{ borderLeft: "4px solid #1d9e75", padding: 16 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#0f6e56", marginBottom: 8 }}>{extrasHeading || "Complimentary / Extras"}</div>
+          <div style={{ border: `1.5px solid ${accentColor}`, borderRadius: 8, overflow: "hidden", background: "#f0fdf8", marginBottom: 20 }}>
+            <div style={{ borderLeft: `4px solid ${accentColor}`, padding: 16 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: brandColor, marginBottom: 8 }}>{extrasHeading || "Complimentary / Extras"}</div>
               {renderExtrasJsx(extrasText)}
             </div>
           </div>
@@ -822,8 +826,8 @@ function ProposalPreview({ client, data, lineItems, totals, proposalId, paymentL
 
         {/* Bank Transfer */}
         <div style={{ fontWeight: 700, fontSize: 15, color: "#111827", marginBottom: 10 }}>Bank Transfer Details</div>
-        <div style={{ border: "1.5px solid #0f6e56", borderRadius: 8, overflow: "hidden", background: "#f0fdf8", marginBottom: 20 }}>
-          <div style={{ borderLeft: "4px solid #0f6e56", padding: 16, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 16px" }}>
+        <div style={{ border: `1.5px solid ${brandColor}`, borderRadius: 8, overflow: "hidden", background: "#f0fdf8", marginBottom: 20 }}>
+          <div style={{ borderLeft: `4px solid ${brandColor}`, padding: 16, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 16px" }}>
             {[["Bank", payment.bank], ["Account Holder", payment.holder || payment.bank], ["Account No", payment.account], ["Account Type", payment.type], ["IFSC", payment.ifsc], ["UPI ID", payment.upi]].map(([label, value]) => (
               <div key={label}>
                 <div style={{ fontSize: 9, fontWeight: 700, color: "#6b7280", textTransform: "uppercase" }}>{label}</div>
@@ -869,7 +873,7 @@ function ProposalPreview({ client, data, lineItems, totals, proposalId, paymentL
 
       {/* Footer */}
       <div style={{ background: "#f9fafb", borderTop: "1px solid #e5e7eb", padding: "14px 32px", textAlign: "center" }}>
-        <div style={{ color: "#0f6e56", fontWeight: 700, fontSize: 13, marginBottom: 3 }}>{company.name || "Propdeck"}</div>
+        <div style={{ color: brandColor, fontWeight: 700, fontSize: 13, marginBottom: 3 }}>{company.name || "Propdeck"}</div>
         <div style={{ color: "#9ca3af", fontSize: 10 }}>© {new Date().getFullYear()} {company.name || "Propdeck"}. All rights reserved.</div>
       </div>
     </div>

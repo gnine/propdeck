@@ -145,6 +145,25 @@ function CompanyTab({ form, onChange }) {
       <Field label="Designation" value={form.designation} onChange={(v) => onChange("designation", v)} />
       <Field label="Contact Phone" value={form.phone} onChange={(v) => onChange("phone", v)} placeholder="e.g. 98100 55678" />
       <Field label="Contact Email" value={form.email} onChange={(v) => onChange("email", v)} placeholder="e.g. sales@yourcompany.com" />
+      <div>
+        <span className="field-label">Proposal Header Color</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 6 }}>
+          <input
+            type="color"
+            value={form.brandColor || "#0f6e56"}
+            onChange={(e) => onChange("brandColor", e.target.value)}
+            style={{ width: 48, height: 36, border: "1px solid #e5e7eb", borderRadius: 6, padding: 2, cursor: "pointer", background: "none" }}
+          />
+          <input
+            className="input"
+            style={{ width: 110 }}
+            value={form.brandColor || "#0f6e56"}
+            placeholder="#0f6e56"
+            onChange={(e) => onChange("brandColor", e.target.value)}
+          />
+          <span className="field-hint" style={{ margin: 0 }}>Used in proposal header &amp; totals bar</span>
+        </div>
+      </div>
       <label className="span-2">
         <span className="field-label">About (shown in proposals)</span>
         <textarea

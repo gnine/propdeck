@@ -98,11 +98,13 @@ function buildResendHtml({ proposal, client, company, payment, kyc, terms, gstRa
   const validTillStr = formatDate(validTill.toISOString().split("T")[0]);
   const signatory = company.signatory || rep?.name || "Sales Team";
   const phone = company.phone || rep?.phone || "";
+  const brandColor = company.brandColor || "#0f6e56";
+  const accentColor = company.brandColor || "#1d9e75";
 
   const inr = (v) => `₹${Number(v).toLocaleString("en-IN")}`;
 
   const productRows = (proposal.products || []).map((p) =>
-    `<div style="padding:4px 0;font-size:13px;color:#374151;"><span style="color:#1d9e75;font-weight:700;margin-right:6px;">✓</span>${p}</div>`
+    `<div style="padding:4px 0;font-size:13px;color:#374151;"><span style="color:${accentColor};font-weight:700;margin-right:6px;">✓</span>${p}</div>`
   ).join("");
 
   const kycItems = kyc.map((d, i) =>
@@ -120,7 +122,7 @@ function buildResendHtml({ proposal, client, company, payment, kyc, terms, gstRa
 <div style="max-width:640px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
 
 <!-- Header -->
-<div style="background:#0f6e56;padding:26px 32px;">
+<div style="background:${brandColor};padding:26px 32px;">
   <table style="width:100%;border-collapse:collapse;"><tr>
     <td><div style="color:#fff;font-size:20px;font-weight:800;">${company.name || "Propdeck"}</div>
       <div style="color:rgba(255,255,255,0.6);font-size:11px;margin-top:3px;">${company.tagline || ""}</div></td>
@@ -160,7 +162,7 @@ function buildResendHtml({ proposal, client, company, payment, kyc, terms, gstRa
   <div style="border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px;background:#fafafa;margin-bottom:20px;">${productRows}</div>
 
   <!-- Total -->
-  <div style="background:#1d9e75;border-radius:8px;padding:14px 16px;margin-bottom:6px;">
+  <div style="background:${accentColor};border-radius:8px;padding:14px 16px;margin-bottom:6px;">
     <table style="width:100%;border-collapse:collapse;"><tr>
       <td style="color:#fff;font-weight:700;font-size:14px;">TOTAL PAYABLE</td>
       <td style="text-align:right;color:#fff;font-weight:800;font-size:20px;">${inr(proposal.amount)}</td>
@@ -171,9 +173,9 @@ function buildResendHtml({ proposal, client, company, payment, kyc, terms, gstRa
   <p style="margin:0 0 24px;font-size:11px;color:#9ca3af;">Prices in INR. GST @ ${gstRate}% included.</p>
 
   ${proposal.extrasText ? `
-  <div style="border:1.5px solid #1d9e75;border-radius:8px;overflow:hidden;background:#f0fdf8;margin-bottom:24px;">
-    <div style="border-left:4px solid #1d9e75;padding:16px;">
-      <div style="font-size:14px;font-weight:700;color:#0f6e56;margin-bottom:8px;">${proposal.extrasHeading || "Complimentary / Extras"}</div>
+  <div style="border:1.5px solid ${accentColor};border-radius:8px;overflow:hidden;background:#f0fdf8;margin-bottom:24px;">
+    <div style="border-left:4px solid ${accentColor};padding:16px;">
+      <div style="font-size:14px;font-weight:700;color:${brandColor};margin-bottom:8px;">${proposal.extrasHeading || "Complimentary / Extras"}</div>
       ${proposal.extrasText.split("\n").filter(l => l.trim()).map(l => /^[-•*]/.test(l.trim())
         ? `<div style="padding:3px 0;font-size:13px;color:#374151;">• ${l.trim().replace(/^[-•*]\s*/,"")}</div>`
         : `<p style="margin:4px 0;font-size:13px;color:#374151;line-height:1.6;">${l}</p>`
@@ -183,8 +185,8 @@ function buildResendHtml({ proposal, client, company, payment, kyc, terms, gstRa
 
   <!-- Bank Transfer -->
   <h3 style="margin:0 0 12px;font-size:15px;color:#111827;font-weight:700;">Bank Transfer Details</h3>
-  <div style="border:1.5px solid #0f6e56;border-radius:8px;overflow:hidden;background:#f0fdf8;margin-bottom:24px;">
-    <div style="border-left:4px solid #0f6e56;padding:16px;">
+  <div style="border:1.5px solid ${brandColor};border-radius:8px;overflow:hidden;background:#f0fdf8;margin-bottom:24px;">
+    <div style="border-left:4px solid ${brandColor};padding:16px;">
       <table style="width:100%;border-collapse:collapse;"><tr>
         <td style="width:50%;padding-right:16px;vertical-align:top;">
           <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">Bank</div>
@@ -225,7 +227,7 @@ function buildResendHtml({ proposal, client, company, payment, kyc, terms, gstRa
 
 <!-- Footer -->
 <div style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:16px 32px;text-align:center;">
-  <div style="color:#0f6e56;font-weight:700;font-size:13px;margin-bottom:4px;">${company.name || "Propdeck"}</div>
+  <div style="color:${brandColor};font-weight:700;font-size:13px;margin-bottom:4px;">${company.name || "Propdeck"}</div>
   ${company.address ? `<div style="color:#6b7280;font-size:11px;margin-bottom:3px;">${company.address.replace(/\n/g, ", ")}</div>` : ""}
   ${company.gst ? `<div style="color:#6b7280;font-size:11px;margin-bottom:3px;">GST No: ${company.gst}</div>` : ""}
   <div style="color:#9ca3af;font-size:10px;">© ${new Date().getFullYear()} ${company.name || "Propdeck"}. All rights reserved.</div>

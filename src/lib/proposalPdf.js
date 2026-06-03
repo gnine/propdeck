@@ -41,8 +41,8 @@ export function totalsFromProposal(proposal) {
   return { subtotal: proposal.subtotal, gst: proposal.gst, total: proposal.amount };
 }
 
-const GREEN = "#0f6e56";
-const GREEN2 = "#1d9e75";
+const DEFAULT_GREEN = "#0f6e56";
+const DEFAULT_GREEN2 = "#1d9e75";
 const GRAY_BG = "#f8fafc";
 const AMBER_BG = "#fffbeb";
 const AMBER_TEXT = "#92400e";
@@ -67,6 +67,8 @@ export function downloadProposalPdf({ proposal, client, settings, rep, lineItems
   const gstRate = settings?.defaults?.gstRate || 18;
   const validityDays = settings?.defaults?.validityDays || 7;
   const freqLabel = frequency || "monthly";
+  const GREEN = company.brandColor || DEFAULT_GREEN;
+  const GREEN2 = company.brandColor || DEFAULT_GREEN2;
 
   const proposalDate = proposal.date ? new Date(proposal.date + "T00:00:00") : new Date();
   const validTill = new Date(proposalDate);
