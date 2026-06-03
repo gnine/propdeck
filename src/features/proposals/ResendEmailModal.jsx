@@ -191,37 +191,33 @@ function buildResendHtml({ proposal, client, company, payment, kyc, terms, gstRa
 
   <!-- Bank Transfer -->
   <h3 style="margin:0 0 12px;font-size:15px;color:#111827;font-weight:700;">Bank Transfer Details</h3>
-  <div style="border:1.5px solid ${brandColor};border-radius:8px;overflow:hidden;background:#f0fdf8;margin-bottom:24px;">
+  <div style="border:1.5px solid ${brandColor};border-radius:${qrDataUrl && payment.upi ? "8px 8px 0 0" : "8px"};overflow:hidden;background:#f0fdf8;margin-bottom:0;">
     <div style="border-left:4px solid ${brandColor};padding:16px;">
       <table style="width:100%;border-collapse:collapse;"><tr>
-        <td style="vertical-align:top;padding-right:16px;">
-          <table style="width:100%;border-collapse:collapse;"><tr>
-            <td style="width:50%;padding-right:12px;vertical-align:top;">
-              <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">Bank</div>
-              <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px;">${payment.bank || "—"}</div>
-              <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">Account No</div>
-              <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px;">${payment.account || "—"}</div>
-              <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">IFSC</div>
-              <div style="font-size:13px;font-weight:600;color:#111827;">${payment.ifsc || "—"}</div>
-            </td>
-            <td style="width:50%;vertical-align:top;">
-              <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">Account Holder</div>
-              <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px;">${payment.holder || payment.bank || "—"}</div>
-              <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">Account Type</div>
-              <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px;">${payment.type || "—"}</div>
-              <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">UPI ID</div>
-              <div style="font-size:13px;font-weight:600;color:#111827;">${payment.upi || "—"}</div>
-            </td>
-          </tr></table>
+        <td style="width:50%;padding-right:16px;vertical-align:top;">
+          <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">Bank</div>
+          <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px;word-break:break-all;">${payment.bank || "—"}</div>
+          <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">Account No</div>
+          <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px;word-break:break-all;">${payment.account || "—"}</div>
+          <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">IFSC</div>
+          <div style="font-size:13px;font-weight:600;color:#111827;word-break:break-all;">${payment.ifsc || "—"}</div>
         </td>
-        ${qrDataUrl && payment.upi ? `
-        <td style="width:160px;vertical-align:middle;text-align:center;">
-          <img src="${qrDataUrl}" alt="UPI QR" width="150" height="150" style="display:block;border-radius:6px;margin:0 auto;" />
-          <div style="font-size:10px;color:#6b7280;font-weight:600;margin-top:5px;">Scan to Pay (UPI)</div>
-        </td>` : ""}
+        <td style="width:50%;vertical-align:top;">
+          <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">Account Holder</div>
+          <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px;word-break:break-all;">${payment.holder || payment.bank || "—"}</div>
+          <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">Account Type</div>
+          <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px;word-break:break-all;">${payment.type || "—"}</div>
+          <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;">UPI ID</div>
+          <div style="font-size:13px;font-weight:600;color:#111827;word-break:break-all;">${payment.upi || "—"}</div>
+        </td>
       </tr></table>
     </div>
   </div>
+  ${qrDataUrl && payment.upi ? `
+  <div style="border:1.5px solid ${brandColor};border-top:none;border-radius:0 0 8px 8px;background:#f0fdf8;text-align:center;padding:14px 16px;margin-bottom:24px;">
+    <img src="${qrDataUrl}" alt="UPI QR Code" width="160" height="160" style="display:inline-block;border-radius:6px;" />
+    <div style="font-size:10px;color:#6b7280;font-weight:600;margin-top:6px;">Scan to Pay via UPI &nbsp;·&nbsp; ${payment.upi}</div>
+  </div>` : `<div style="margin-bottom:24px;"></div>`}
 
   ${kyc.length > 0 ? `
   <h3 style="margin:0 0 12px;font-size:15px;color:#111827;font-weight:700;">KYC Documents Required</h3>

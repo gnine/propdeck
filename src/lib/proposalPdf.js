@@ -337,13 +337,13 @@ export async function downloadProposalPdf({ proposal, client, settings, rep, lin
   txt("Bank Transfer Details", M, y, { size: 12, bold: true });
   y += 14;
 
-  const qrSize = upiQrDataUrl && payment.upi ? 88 : 0; // QR image size in pts
   const bankRows = [
     [["Bank", payment.bank], ["Account Holder", payment.holder || payment.bank]],
     [["Account No", payment.account], ["Account Type", payment.type]],
     [["IFSC", payment.ifsc], ["UPI ID", payment.upi]],
   ];
-  const boxH = Math.max(bankRows.length * 30 + 16, qrSize + 24);
+  const bankColW2 = CW / 2;
+  const boxH = bankRows.length * 30 + 16;
   doc.setFillColor("#f0fdf8");
   doc.setDrawColor(GREEN);
   doc.setLineWidth(1);
@@ -351,27 +351,34 @@ export async function downloadProposalPdf({ proposal, client, settings, rep, lin
   doc.setFillColor(GREEN);
   doc.rect(M, y, 3, boxH, "F");
 
-  // Bank text columns — narrow if QR is present
-  const bankTextW = qrSize > 0 ? CW - qrSize - 20 : CW;
-  const bankColW = bankTextW / 2;
   let bY = y + 18;
   bankRows.forEach(([left, right]) => {
     txt(left[0], M + 14, bY, { size: 7.5, bold: true, color: CL });
-    txt(left[1] || "—", M + 14, bY + 12, { size: 9, bold: true, color: CD, maxWidth: bankColW - 20 });
-    txt(right[0], M + 14 + bankColW, bY, { size: 7.5, bold: true, color: CL });
-    txt(right[1] || "—", M + 14 + bankColW, bY + 12, { size: 9, bold: true, color: CD, maxWidth: bankColW - 14 });
+    txt(left[1] || "—", M + 14, bY + 12, { size: 9, bold: true, color: CD, maxWidth: bankColW2 - 20 });
+    txt(right[0], M + 14 + bankColW2, bY, { size: 7.5, bold: true, color: CL });
+    txt(right[1] || "—", M + 14 + bankColW2, bY + 12, { size: 9, bold: true, color: CD, maxWidth: bankColW2 - 14 });
     bY += 30;
   });
+  y += boxH;
 
-  // QR code on the right side of bank box
+  // QR code below the bank box — full width, centred
   if (upiQrDataUrl && payment.upi) {
-    const qrX = M + CW - qrSize - 10;
-    const qrY = y + (boxH - qrSize - 14) / 2;
-    doc.addImage(upiQrDataUrl, "PNG", qrX, qrY, qrSize, qrSize);
-    txt("Scan to Pay (UPI)", qrX + qrSize / 2, qrY + qrSize + 10, { size: 7, color: CL, align: "center" });
+    const qrSize = 90;
+    const qrBoxH = qrSize + 28;
+    need(qrBoxH);
+    doc.setFillColor("#f0fdf8");
+    doc.setDrawColor(GREEN);
+    doc.setLineWidth(1);
+    doc.rect(M, y, CW, qrBoxH, "FD");
+    doc.setFillColor(GREEN);
+    doc.rect(M, y, 3, qrBoxH, "F");
+    const qrX = M + (CW - qrSize) / 2;
+    doc.addImage(upiQrDataUrl, "PNG", qrX, y + 6, qrSize, qrSize);
+    txt(`Scan to Pay via UPI  ·  ${payment.upi}`, M + CW / 2, y + qrSize + 18, { size: 7.5, color: CL, align: "center" });
+    y += qrBoxH;
   }
 
-  y += boxH + 18;
+  y += 18;
 
   // ── KYC ──────────────────────────────────────────────────
   if (kyc.length > 0) {
